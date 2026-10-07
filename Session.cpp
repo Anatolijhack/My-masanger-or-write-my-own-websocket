@@ -835,7 +835,39 @@ void Session::do_websocket_read()
         //
         std::size_t header_size = 2;
 
+// Control frames:
+// CLOSE (0x8), PING (0x9), PONG (0xA)
+// must always have FIN=1 and payload <= 125 bytes.
 
+const bool is_control_frame =
+    opcode == 0x8 ||
+    opcode == 0x9 ||
+    opcode == 0xA;
+
+if (is_control_frame)
+{
+    if (!fin)
+    {
+        LOG_ERROR(
+            "WebSocket control frame "
+            "must have FIN=1"
+        );
+
+        do_shutdown();
+        return;
+    }
+
+    if (payload_length > 125)
+    {
+        LOG_ERROR(
+            "WebSocket control frame "
+            "payload is too large"
+        );
+
+        do_shutdown();
+        return;
+    }
+}
 
         if (opcode == 0x0)
         {
