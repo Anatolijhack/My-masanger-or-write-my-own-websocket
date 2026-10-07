@@ -66,6 +66,8 @@ private:
 	void send_websocket_text(const std::string& message);
 	void send_websocket_binary(const std::string& data);
 	void send_websocket_pong(const std::string& payload);
+bool is_valid_websocket_close_code(
+    std::uint16_t code);
 public:
 	Session(tcp::socket socket, ThreadPool& pool, Router& router, boost::asio::ssl::context& ssl_context);
 	void start();
