@@ -1206,6 +1206,17 @@ if (is_control_frame)
                         << close_code
                         << std::endl;
 
+
+if (!is_valid_websocket_close_code(close_code))
+{
+    LOG_ERROR(
+        "Invalid WebSocket CLOSE code"
+    );
+
+    do_shutdown();
+    return;
+}
+
                     // Reason начинается с третьего байта
                     if (payload.size() > 2)
                     {
