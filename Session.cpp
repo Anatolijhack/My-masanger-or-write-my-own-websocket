@@ -6,6 +6,67 @@
 #include "Structs.h"
 #include "Router.h"
 
+
+bool Session::is_valid_websocket_close_code(
+    std::uint16_t code)
+{
+    // Normal closure
+    if (code == 1000)
+    {
+        return true;
+    }
+
+    // Protocol / application-level close codes
+    if (code == 1001 ||
+        code == 1002 ||
+        code == 1003)
+    {
+        return true;
+    }
+
+    // 1004 is reserved
+    if (code == 1004)
+    {
+        return false;
+    }
+
+    // 1005: No Status Received
+    // Must NOT be sent in a CLOSE frame.
+    if (code == 1005)
+    {
+        return false;
+    }
+
+    // 1006: Abnormal Closure
+    // Must NOT be sent in a CLOSE frame.
+    if (code == 1006)
+    {
+        return false;
+    }
+
+    // 1007 - 1014 are defined WebSocket close codes
+    if (code >= 1007 &&
+        code <= 1014)
+    {
+        return true;
+    }
+
+    // 1015: TLS failure
+    // Must NOT be sent in a CLOSE frame.
+    if (code == 1015)
+    {
+        return false;
+    }
+
+    // Application-defined codes
+    if (code >= 3000 &&
+        code <= 4999)
+    {
+        return true;
+    }
+
+    return false;
+}
 static std::string websocket_accept(const std::string& key)
 {
     static constexpr char GUID[] =
