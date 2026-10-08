@@ -6,6 +6,170 @@
 #include "Structs.h"
 #include "Router.h"
 
+bool Session::is_valid_utf8(
+    const std::string& data)
+{
+    std::size_t i = 0;
+
+    while (i < data.size())
+    {
+        const unsigned char c =
+            static_cast<unsigned char>(
+                data[i]
+            );
+
+        // -----------------------------
+        // 1-byte character
+        // U+0000 ... U+007F
+        // -----------------------------
+
+        if (c <= 0x7F)
+        {
+            ++i;
+            continue;
+        }
+
+        // -----------------------------
+        // 2-byte character
+        // U+0080 ... U+07FF
+        // -----------------------------
+
+        if (c >= 0xC2 &&
+            c <= 0xDF)
+        {
+            if (i + 1 >= data.size())
+            {
+                return false;
+            }
+
+            const unsigned char c1 =
+                static_cast<unsigned char>(
+                    data[i + 1]
+                );
+
+            if (c1 < 0x80 ||
+                c1 > 0xBF)
+            {
+                return false;
+            }
+
+            i += 2;
+            continue;
+        }
+
+        // -----------------------------
+        // 3-byte character
+        // -----------------------------
+
+        if (c >= 0xE0 &&
+            c <= 0xEF)
+        {
+            if (i + 2 >= data.size())
+            {
+                return false;
+            }
+
+            const unsigned char c1 =
+                static_cast<unsigned char>(
+                    data[i + 1]
+                );
+
+            const unsigned char c2 =
+                static_cast<unsigned char>(
+                    data[i + 2]
+                );
+
+            if (c1 < 0x80 ||
+                c1 > 0xBF ||
+                c2 < 0x80 ||
+                c2 > 0xBF)
+            {
+                return false;
+            }
+
+            // Запрещаем overlong encoding
+            // и UTF-16 surrogate range.
+            if (c == 0xE0 &&
+                c1 < 0xA0)
+            {
+                return false;
+            }
+
+            if (c == 0xED &&
+                c1 > 0x9F)
+            {
+                return false;
+            }
+
+            i += 3;
+            continue;
+        }
+
+        // -----------------------------
+        // 4-byte character
+        // U+10000 ... U+10FFFF
+        // -----------------------------
+
+        if (c >= 0xF0 &&
+            c <= 0xF4)
+        {
+            if (i + 3 >= data.size())
+            {
+                return false;
+            }
+
+            const unsigned char c1 =
+                static_cast<unsigned char>(
+                    data[i + 1]
+                );
+
+            const unsigned char c2 =
+                static_cast<unsigned char>(
+                    data[i + 2]
+                );
+
+            const unsigned char c3 =
+                static_cast<unsigned char>(
+                    data[i + 3]
+                );
+
+            if (c1 < 0x80 ||
+                c1 > 0xBF ||
+                c2 < 0x80 ||
+                c2 > 0xBF ||
+                c3 < 0x80 ||
+                c3 > 0xBF)
+            {
+                return false;
+            }
+
+            // U+10000 minimum
+            if (c == 0xF0 &&
+                c1 < 0x90)
+            {
+                return false;
+            }
+
+            // U+10FFFF maximum
+            if (c == 0xF4 &&
+                c1 > 0x8F)
+            {
+                return false;
+            }
+
+            i += 4;
+            continue;
+        }
+
+        // -----------------------------
+        // Invalid UTF-8 leading byte
+        // -----------------------------
+
+        return false;
+    }
+
+    return true;
+}
 
 bool Session::is_valid_websocket_close_code(
     std::uint16_t code)
