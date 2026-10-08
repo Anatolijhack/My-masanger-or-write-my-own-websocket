@@ -1039,7 +1039,7 @@ void Session::do_websocket_read()
 
       
 
-        const unsigned const bool fin =
+        const bool fin =
     (byte1 & 0x80) != 0;
 
 const bool rsv1 =
