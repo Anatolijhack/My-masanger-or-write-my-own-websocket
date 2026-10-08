@@ -1037,8 +1037,7 @@ void Session::do_websocket_read()
         const unsigned char byte2 =
             static_cast<unsigned char>(buffer[1]);
 
-        const bool fin =
-            (byte1 & 0x80) != 0;
+      
 
         const unsigned const bool fin =
     (byte1 & 0x80) != 0;
@@ -1532,18 +1531,27 @@ if (!is_valid_websocket_close_code(close_code))
         // -----------------------------
 
         if (opcode == 0x1 || opcode == 0x0)
-        {
-            std::cout
-                << "WebSocket message: "
-                << payload
-                << std::endl;
+{
+    if (!is_valid_utf8(payload))
+    {
+        LOG_ERROR(
+            "Invalid UTF-8 in WebSocket TEXT message"
+        );
 
-            send_websocket_text(payload);
+        do_shutdown();
+        return;
+    }
 
-            do_websocket_read();
+    std::cout
+        << "WebSocket message: "
+        << payload
+        << std::endl;
 
-            return;
-        }
+    send_websocket_text(payload);
+
+    do_websocket_read();
+    return;
+}
     }
 
     // -----------------------------
