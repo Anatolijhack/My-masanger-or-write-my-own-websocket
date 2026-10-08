@@ -876,8 +876,30 @@ void Session::do_websocket_read()
         const bool fin =
             (byte1 & 0x80) != 0;
 
-        const unsigned char opcode =
-            byte1 & 0x0F;
+        const unsigned const bool fin =
+    (byte1 & 0x80) != 0;
+
+const bool rsv1 =
+    (byte1 & 0x40) != 0;
+
+const bool rsv2 =
+    (byte1 & 0x20) != 0;
+
+const bool rsv3 =
+    (byte1 & 0x10) != 0;
+
+if (rsv1 || rsv2 || rsv3)
+{
+    LOG_ERROR(
+        "WebSocket RSV bits are not supported"
+    );
+
+    do_shutdown();
+    return;
+}
+
+const unsigned char opcode =
+    byte1 & 0x0F;
 
         const bool masked =
             (byte2 & 0x80) != 0;
