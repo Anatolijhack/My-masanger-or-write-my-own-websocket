@@ -34,7 +34,8 @@ private:
 	std::unordered_map<std::string, std::string> headers;
 	std::array<char, 4096> temp;
 	int content_lenght = 0;
-	std::deque<std::shared_ptr<std::string>> write_queue;
+bool is_valid_utf8(
+    const std::string& data);	std::deque<std::shared_ptr<std::string>> write_queue;
 	bool writing = false;
 	boost::asio::ssl::stream<tcp::socket> socket;
 	std::string buffer;
